@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Pb.Core.Tests</RootNamespace>
+    <AssemblyName>Pb.Core.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Pb.Core/Pb.Core.csproj" />
+    <ProjectReference Include="../../src/Pb.Cli/Pb.Cli.csproj" />
+    <ProjectReference Include="../../src/Pb.Monitor/Pb.Monitor.csproj" />
+  </ItemGroup>
+
+</Project>

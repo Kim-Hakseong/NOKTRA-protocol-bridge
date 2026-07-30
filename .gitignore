@@ -1,0 +1,15 @@
+bin/
+obj/
+publish/
+out/
+*.user
+.DS_Store
+TestResults/
+
+# Development harness documents — not part of the published product.
+CLAUDE.md
+CONTEXT.md
+PRD.md
+DESIGN.md
+PROMPT_ralph.md
+RALPH_LOG.md

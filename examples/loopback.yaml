@@ -1,0 +1,126 @@
+# loopback.yaml — a runnable example that needs no external hardware.
+#
+#   bridge check examples/loopback.yaml     validate the wiring and print the topology
+#   bridge run   examples/loopback.yaml     start moving data (Ctrl+C to stop)
+#
+# It listens for UDP telemetry on port 15010 and republishes it three ways: back out over UDP,
+# into a CSV log, and to an MQTT broker. To feed it, send a 4-byte big-endian frame to
+# 127.0.0.1:15010 — the first two bytes are the raw level, the next two the raw temperature.
+#
+# The MQTT route is parked with `enabled: false` because it needs a broker on 127.0.0.1:1883.
+# Set it to true once one is running.
+
+bridge:
+  name: loopback-demo
+
+endpoints:
+  # Where telemetry arrives.
+  - id: field
+    type: udp
+    listen_port: 15010
+    bind_address: 127.0.0.1
+
+  # Where the converted values go. Both channels pack into one 8-byte frame.
+  - id: scada
+    type: udp
+    host: 127.0.0.1
+    port: 15011
+    frame_bytes: 8
+
+  # A rolling engineering-value log.
+  - id: archive
+    type: csv
+    path: out/loopback.csv
+    header: true
+    flush_every_row: true
+
+  # An MQTT broker. Topics become mqtt/<channel name with '.' as a level separator>.
+  - id: broker
+    type: mqtt
+    host: 127.0.0.1
+    port: 1883
+    client_id: noktra-protocol-bridge
+    topic_prefix: noktra/demo
+    keep_alive_s: 30
+    payload: json
+
+channels:
+  # Raw wire values, addressed by their byte offset in the incoming datagram.
+  - name: level_raw
+    endpoint: field
+    address: offset:0
+    type: u16
+
+  - name: temperature_raw
+    endpoint: field
+    address: offset:2
+    type: s16
+
+  # Engineering values, addressed by their byte offset in the outgoing datagram.
+  - name: level_out
+    endpoint: scada
+    address: offset:0
+    type: f32
+
+  - name: temperature_out
+    endpoint: scada
+    address: offset:4
+    type: f32
+
+  # File and broker channels are addressed by name, so their address is fixed.
+  - name: level_log
+    endpoint: archive
+    address: csv:0
+    type: f32
+
+  - name: tank1.level
+    endpoint: broker
+    address: topic:0
+    type: f32
+
+routes:
+  # Republish every datagram as it arrives: raw counts scaled to bar.
+  - id: level_to_scada
+    source: level_raw
+    sink: level_out
+    trigger:
+      mode: on_change
+    transform:
+      scale: 0.1
+      unit: bar
+      deadband: 0.05
+
+  # A signed raw value in tenths of a degree, offset into degrees Celsius.
+  - id: temperature_to_scada
+    source: temperature_raw
+    sink: temperature_out
+    trigger:
+      mode: on_change
+    transform:
+      scale: 0.1
+      offset: 0.0
+      unit: degC
+      deadband: 0.2
+
+  # Sample the latest received value once a second into the log, regardless of change.
+  - id: level_to_csv
+    source: level_raw
+    sink: level_log
+    trigger:
+      mode: periodic
+      period_ms: 1000
+    transform:
+      scale: 0.1
+      unit: bar
+
+  # Needs a broker; enable once one is reachable.
+  - id: level_to_mqtt
+    source: level_raw
+    sink: tank1.level
+    enabled: false
+    trigger:
+      mode: on_change
+    transform:
+      scale: 0.1
+      unit: bar
+      deadband: 0.05

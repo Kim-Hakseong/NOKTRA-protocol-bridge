@@ -1,0 +1,280 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pb="using:Pb.Monitor"
+             mc:Ignorable="d"
+             x:Class="Pb.Monitor.Views.MonitorView"
+             x:DataType="pb:MonitorViewModel">
+
+  <!--
+    The whole monitor surface. It lives in a UserControl rather than directly in the window so the
+    build can render it off-screen to a PNG and the layout can be reviewed at 2x.
+  -->
+
+  <Grid RowDefinitions="62,*,42">
+    <Grid.Background>
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="30%,100%">
+        <GradientStop Offset="0" Color="{StaticResource NoktraCanvasTop}" />
+        <GradientStop Offset="1" Color="{StaticResource NoktraCanvasBottom}" />
+      </LinearGradientBrush>
+    </Grid.Background>
+
+    <!-- ================================================================== header -->
+    <Grid Grid.Row="0" Margin="24,16,24,0" ColumnDefinitions="Auto,Auto,*,Auto">
+
+      <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <Border Classes="chip" Width="26" Height="26" CornerRadius="6" Padding="0">
+          <TextBlock Text="N" FontSize="13" FontWeight="Bold"
+                     Foreground="{StaticResource NoktraOnInk}"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="NOKTRA" FontSize="13" FontWeight="Bold" LetterSpacing="3.2"
+                     Foreground="{StaticResource NoktraInk}" />
+          <TextBlock Classes="micro" Text="PROTOCOL BRIDGE" Margin="0,1,0,0" />
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Margin="34,0,0,0" VerticalAlignment="Center">
+        <TextBlock Classes="micro" Text="UPTIME" />
+        <TextBlock Classes="micro micro-ink" Text="{Binding UptimeText}" Margin="0,2,0,0" />
+      </StackPanel>
+
+      <Line Grid.Column="2" Classes="ticks" StartPoint="0,0" EndPoint="240,0"
+            HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+      <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Border Classes="chip-outline">
+          <TextBlock Classes="micro micro-ink" Text="{Binding BridgeName}" />
+        </Border>
+        <Border Classes="chip">
+          <TextBlock Classes="micro" Text="{Binding DateText}"
+                     Foreground="{StaticResource NoktraOnInk}" />
+        </Border>
+        <Border Classes="chip"
+                Background="{Binding IsHealthy, Converter={x:Static pb:HealthBrushConverter.Chip}}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="5" Height="5" VerticalAlignment="Center"
+                     Fill="{Binding IsHealthy, Converter={x:Static pb:HealthBrushConverter.Dot}}" />
+            <TextBlock Classes="micro" Text="{Binding StateText}" Foreground="#EAF9FB" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Grid>
+
+    <!-- ==================================================================== body -->
+    <Grid Grid.Row="1" Margin="24,18,24,16" ColumnDefinitions="*,320" >
+
+      <!-- ============================================================= routes -->
+      <Border Grid.Column="0" Classes="panel" Margin="0,0,16,0">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="22,20,22,18">
+
+          <Canvas Grid.Row="2" ClipToBounds="False">
+            <TextBlock Classes="ghost" Text="ROUTES" Canvas.Left="4" Canvas.Top="300" />
+          </Canvas>
+
+          <!-- panel title, and the corner instrument reading connected endpoints -->
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Top">
+              <Border Classes="chip" CornerRadius="7" Padding="14,7,20,8">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <TextBlock Text="01" FontSize="12" FontWeight="Medium" LetterSpacing="1"
+                             Foreground="{StaticResource NoktraOnInkMuted}"
+                             VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                  <TextBlock Classes="title" Text="Routes" />
+                </StackPanel>
+              </Border>
+              <StackPanel VerticalAlignment="Center" Spacing="3">
+                <TextBlock Classes="micro" Text="SOURCE  ·  TRANSFORM  ·  SINK" />
+                <TextBlock Classes="micro micro-ink" Text="R READ  S SENT  H HELD  D DROPPED" />
+              </StackPanel>
+            </StackPanel>
+
+            <Grid Grid.Column="1" Width="76" Height="76" VerticalAlignment="Top">
+              <Ellipse Stroke="{StaticResource NoktraInkSoft}" StrokeThickness="5"
+                       StrokeDashArray="0.35,0.6" Margin="1" />
+              <Arc Stroke="{StaticResource NoktraAccentBright}" StrokeThickness="3"
+                   StartAngle="-90" Margin="11"
+                   SweepAngle="{Binding ConnectedFraction, Converter={x:Static pb:SweepConverter.Instance}}" />
+              <Ellipse Fill="{StaticResource NoktraInk}" Width="38" Height="38" />
+              <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding ConnectedText}" FontSize="12" FontWeight="Bold"
+                           Foreground="{StaticResource NoktraOnInk}"
+                           HorizontalAlignment="Center" />
+                <TextBlock Classes="micro micro-onink" Text="LINK" HorizontalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+          </Grid>
+
+          <!-- column headings, on their own row so the roster can never overlap them -->
+          <Grid Grid.Row="1" Margin="11,22,11,6" ColumnDefinitions="150,*,110,96">
+            <TextBlock Grid.Column="0" Classes="micro" Text="ROUTE" />
+            <TextBlock Grid.Column="1" Classes="micro" Text="CHANNELS" />
+            <TextBlock Grid.Column="2" Classes="micro" Text="VALUE" />
+            <TextBlock Grid.Column="3" Classes="micro" Text="STATE" TextAlignment="Right" />
+          </Grid>
+
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Routes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="pb:RouteRow">
+                  <Border Classes="roster">
+                    <Grid ColumnDefinitions="150,*,110,96" RowDefinitions="Auto,Auto">
+
+                      <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                 Fill="{Binding Health, Converter={x:Static pb:RouteHealthBrushConverter.Instance}}" />
+                        <TextBlock Text="{Binding Id}" FontFamily="{StaticResource NoktraSans}"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource NoktraInk}"
+                                   VerticalAlignment="Center" />
+                      </StackPanel>
+
+                      <TextBlock Grid.Row="0" Grid.Column="1" Classes="readout"
+                                 Text="{Binding Flow}" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" />
+
+                      <TextBlock Grid.Row="0" Grid.Column="2" Classes="readout-lg"
+                                 Text="{Binding Value}" VerticalAlignment="Center" />
+
+                      <TextBlock Grid.Row="0" Grid.Column="3" Classes="micro"
+                                 Text="{Binding HealthText}" TextAlignment="Right"
+                                 VerticalAlignment="Center"
+                                 Foreground="{Binding Health, Converter={x:Static pb:RouteHealthBrushConverter.Instance}}" />
+
+                      <TextBlock Grid.Row="1" Grid.Column="1" Classes="micro" Margin="0,4,0,0"
+                                 Text="{Binding Counters}" />
+
+                      <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Classes="micro"
+                                 Margin="0,4,0,0" TextAlignment="Right"
+                                 Foreground="{StaticResource NoktraAlert}"
+                                 Text="{Binding Detail}" TextTrimming="CharacterEllipsis"
+                                 IsVisible="{Binding Detail, Converter={x:Static pb:NotNullConverter.Instance}}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+          <!-- annotation strip, on a dedicated row -->
+          <Grid Grid.Row="3" Margin="2,12,2,0" ColumnDefinitions="Auto,*,Auto">
+            <TextBlock Grid.Column="0" Classes="micro" Text="{Binding ConfigurationPath}"
+                       TextTrimming="CharacterEllipsis" />
+            <Line Grid.Column="1" Classes="ticks" StartPoint="0,0" EndPoint="120,0"
+                  HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0" />
+            <TextBlock Grid.Column="2" Classes="micro micro-accent" Text="OFFLINE FIRST" />
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- ========================================================== endpoints -->
+      <Border Grid.Column="1" Classes="panel">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="18,20,18,18">
+
+          <Border Grid.Row="0" Classes="chip" CornerRadius="7" Padding="12,6,16,7"
+                  HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="02" FontSize="11" FontWeight="Medium" LetterSpacing="1"
+                         Foreground="{StaticResource NoktraOnInkMuted}"
+                         VerticalAlignment="Bottom" Margin="0,0,0,2" />
+              <TextBlock Classes="title" FontSize="20" Text="Endpoints" />
+            </StackPanel>
+          </Border>
+
+          <TextBlock Grid.Row="1" Classes="micro" Margin="11,14,0,6" Text="DRIVER  ·  TARGET" />
+
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Endpoints}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="pb:EndpointRow">
+                  <Border Classes="roster">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+
+                      <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                 Fill="{Binding State, Converter={x:Static pb:EndpointStateBrushConverter.Instance}}" />
+                        <TextBlock Text="{Binding Id}" FontFamily="{StaticResource NoktraSans}"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource NoktraInk}" />
+                      </StackPanel>
+
+                      <TextBlock Grid.Row="0" Grid.Column="1" Classes="micro"
+                                 Text="{Binding Kind}" VerticalAlignment="Center" />
+
+                      <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="readout"
+                                 Margin="15,3,0,0" Text="{Binding Target}"
+                                 TextTrimming="CharacterEllipsis" />
+
+                      <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Classes="micro"
+                                 Margin="15,4,0,0" Text="{Binding Detail}"
+                                 TextTrimming="CharacterEllipsis"
+                                 Foreground="{Binding State, Converter={x:Static pb:EndpointStateBrushConverter.Detail}}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+          <!-- the dark statistic table: the totals that matter for an unattended bridge -->
+          <StackPanel Grid.Row="3" Margin="0,14,0,0">
+            <TextBlock Classes="micro" Text="TOTALS" Margin="2,0,0,6" />
+            <Border Classes="statrow">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="k" Text="ROUTES LIVE" />
+                <TextBlock Grid.Column="1" Classes="v" Text="{Binding RouteCountText}" />
+              </Grid>
+            </Border>
+            <Border Classes="statrow">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="k" Text="SAMPLES READ" />
+                <TextBlock Grid.Column="1" Classes="v" Text="{Binding ReadText}" />
+              </Grid>
+            </Border>
+            <Border Classes="statrow">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="k" Text="FORWARDED" />
+                <TextBlock Grid.Column="1" Classes="v" Text="{Binding ForwardedText}" />
+              </Grid>
+            </Border>
+            <Border Classes="statrow">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="k" Text="HELD BY DEADBAND" />
+                <TextBlock Grid.Column="1" Classes="v" Text="{Binding SuppressedText}" />
+              </Grid>
+            </Border>
+            <Border Classes="statrow">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="k" Text="DROPPED" />
+                <TextBlock Grid.Column="1" Classes="v" Text="{Binding DroppedText}" />
+              </Grid>
+            </Border>
+          </StackPanel>
+
+          <TextBlock Grid.Row="4" Classes="micro" Margin="2,12,0,0"
+                     Text="{Binding Summary}" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- ================================================================== legal -->
+    <Border Grid.Row="2" Background="{StaticResource NoktraLegalStrip}">
+      <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+        <TextBlock Text="© 2026 NOKTRA  ·  MIT licensed" FontSize="12"
+                   Foreground="{StaticResource NoktraWordmarkMuted}" VerticalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="Noktra" FontFamily="serif" FontSize="18" FontWeight="Bold"
+                     Foreground="{StaticResource NoktraWordmark}" VerticalAlignment="Center" />
+          <TextBlock Text=" Protocol Bridge" FontFamily="serif" FontSize="18"
+                     Foreground="{StaticResource NoktraWordmarkMuted}" VerticalAlignment="Center" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+
+</UserControl>

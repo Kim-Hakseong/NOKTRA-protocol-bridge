@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Noktra design tokens - a light "instrument panel" palette, shared across the product family.
+
+    A warm neutral grey field with near-white instrument surfaces, hard black chips for anything
+    that names something, and a single cold teal accent. Keeping to exactly one accent is what
+    makes the teal read as "this is the live value" rather than as decoration.
+
+    Type is Inter (SIL Open Font License 1.1), already carried by Avalonia.Fonts.Inter, so nothing
+    new is licensed or shipped. Numeric read-outs fall back to the platform monospace so columns
+    of figures line up.
+  -->
+
+  <!-- Surfaces -->
+  <Color x:Key="NoktraCanvasTop">#BCBFC0</Color>
+  <Color x:Key="NoktraCanvasBottom">#A9ADAE</Color>
+  <SolidColorBrush x:Key="NoktraPanel" Color="#F3F4F5" />
+  <SolidColorBrush x:Key="NoktraPanelSunk" Color="#E7E9EA" />
+  <SolidColorBrush x:Key="NoktraPanelEdge" Color="#FFFFFF" />
+
+  <!-- Ink -->
+  <SolidColorBrush x:Key="NoktraInk" Color="#0E1113" />
+  <SolidColorBrush x:Key="NoktraInkSoft" Color="#2B3033" />
+  <SolidColorBrush x:Key="NoktraMuted" Color="#7E8588" />
+  <SolidColorBrush x:Key="NoktraLine" Color="#CDD1D3" />
+  <SolidColorBrush x:Key="NoktraLineFaint" Color="#DEE1E2" />
+
+  <!-- The single accent, and its two working shades -->
+  <SolidColorBrush x:Key="NoktraAccent" Color="#1E7C8C" />
+  <SolidColorBrush x:Key="NoktraAccentBright" Color="#31A9BC" />
+  <SolidColorBrush x:Key="NoktraAccentWash" Color="#D8E8EA" />
+
+  <!-- States. Amber and rust are deliberately desaturated so they sit inside the same world. -->
+  <SolidColorBrush x:Key="NoktraWarn" Color="#B9862F" />
+  <SolidColorBrush x:Key="NoktraAlert" Color="#A8412F" />
+  <SolidColorBrush x:Key="NoktraReserved" Color="#9AA1A4" />
+
+  <SolidColorBrush x:Key="NoktraOnInk" Color="#F3F4F5" />
+  <SolidColorBrush x:Key="NoktraOnInkMuted" Color="#8B9295" />
+
+  <!-- Footer strip -->
+  <SolidColorBrush x:Key="NoktraLegalStrip" Color="#EFEEE9" />
+  <SolidColorBrush x:Key="NoktraWordmark" Color="#262623" />
+  <SolidColorBrush x:Key="NoktraWordmarkMuted" Color="#8B8B84" />
+
+  <FontFamily x:Key="NoktraSans">Inter</FontFamily>
+  <FontFamily x:Key="NoktraMono">monospace</FontFamily>
+
+</ResourceDictionary>
