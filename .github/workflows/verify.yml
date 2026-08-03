@@ -1,0 +1,20 @@
+# 골든 벡터 검증 — 매일 실행되고, 결과는 noktra-website 배지가 집계한다.
+name: Verify
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 18 * * *'   # 03:00 KST
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Run golden-vector suite
+        run: dotnet test ProtocolBridge.sln --nologo
