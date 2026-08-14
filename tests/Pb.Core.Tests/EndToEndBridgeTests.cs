@@ -160,7 +160,6 @@ public sealed class EndToEndBridgeTests : IDisposable
             await WaitForAsync(() => AllConnected(router), Ct);
 
             List<float> received = [];
-            Task<byte[]> pending = receiver.ReceiveAsync(Ct);
 
             // The DESIGN deadband sequence, driven through the real slave's register.
             foreach (ushort register in new ushort[] { 10, 13, 16, 14 })
@@ -171,19 +170,16 @@ public sealed class EndToEndBridgeTests : IDisposable
                 await time.WaitForPendingDelaysAsync(3, Ct);
                 time.AdvanceToNextDelay();
                 await WaitForAsync(() => router.Snapshot().Routes.Single().SamplesRead > readsBefore, Ct);
-
-                if (pending.IsCompleted)
-                {
-                    received.Add(BinaryPrimitives.ReadSingleBigEndian(await pending));
-                    pending = receiver.ReceiveAsync(Ct);
-                }
             }
 
             await WaitForAsync(() => router.Snapshot().Routes.Single().SamplesForwarded == 2, Ct);
 
-            if (pending.IsCompleted)
+            // Drain the two forwarded datagrams directly from the socket buffer. Polling
+            // IsCompleted between registers was flaky: a datagram still in flight at the
+            // moment of the check was silently missed. Loopback UDP preserves order.
+            while (received.Count < 2)
             {
-                received.Add(BinaryPrimitives.ReadSingleBigEndian(await pending));
+                received.Add(BinaryPrimitives.ReadSingleBigEndian(await receiver.ReceiveAsync(Ct)));
             }
 
             RouteStatus status = router.Snapshot().Routes.Single();
